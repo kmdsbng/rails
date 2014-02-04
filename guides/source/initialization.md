@@ -280,19 +280,20 @@ def parse_options(args)
 end
 ```
 
-With the `default_options` set to this:
+With the `default_options` in overwritten in `Rails::Server` set to this:
 
 ```ruby
 def default_options
-  {
-    environment: ENV['RACK_ENV'] || "development",
-    pid:         nil,
-    Port:        9292,
-    Host:        "0.0.0.0",
-    AccessLog:   [],
-    config:      "config.ru"
-  }
-end
+  super.merge({
+    Port:               3000,
+    DoNotReverseLookup: true,
+    environment:        (ENV['RAILS_ENV'] || ENV['RACK_ENV'] || "development").dup,
+    daemonize:          false,
+    debugger:           false,
+    pid:                File.expand_path("tmp/pids/server.pid"),
+    config:             File.expand_path("config.ru")
+  })
+end  
 ```
 
 There is no `REQUEST_METHOD` key in `ENV` so we can skip over that line. The next line merges in the options from `opt_parser` which is defined plainly in `Rack::Server`
